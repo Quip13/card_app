@@ -81,6 +81,7 @@
     <Content Include="card_app\templates\contact.html" />
     <Content Include="card_app\templates\index.html" />
     <Content Include="card_app\templates\layout.html" />
+    <Content Include="Procfile" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="venv\">
