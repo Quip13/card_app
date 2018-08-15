@@ -11,11 +11,12 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
-    <form action="" method="post">
+    <form action="" method="post" novalidate="novalidate"> <!--prevents HTML5 popup-->
         {{ form.csrf }} 
-        <div class="input text">
-            {{ form.name.label }} {{ form.name }}
+        <div class="form-group">
+            {{ form.name_field.label }} {{ form.name_field }}
         </div>
+
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
 

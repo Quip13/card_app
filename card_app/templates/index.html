@@ -2,13 +2,15 @@
 
 {% block content %}
 
-<div class="jumbotron">
-    <h1>Flask</h1>
-    <p class="lead">Flask is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="http://flask.pocoo.org/" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
+<div class="jumbotron text-left">
+    <div class="container">
+    <h1 class="jumbotron-heading">Forms</h1>
+    <p class="lead">Enter some stuff</p>
+    <p><a href="{{ url_for('form') }}" class="btn btn-primary btn-large">Start Here &raquo;</a></p>
+    </div>
 </div>
 
-<div class="row">
+<!--<div class="row">
     <div class="col-md-4">
         <h2>Form</h2>
         <p>
@@ -26,6 +28,6 @@
         <p>You can easily publish to Microsoft Azure using Visual Studio. Find out how you can host your application using a free trial today.</p>
         <p><a class="btn btn-default" href="http://azure.microsoft.com">Learn more &raquo;</a></p>
     </div>
-</div>
+</div>-->
 
 {% endblock %}

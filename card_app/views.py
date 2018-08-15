@@ -8,7 +8,10 @@ from wtforms import Form, TextField, TextAreaField, validators, StringField, Sub
 from card_app import app
 
 class ReusableForm(Form):
-    name = TextField('Name:', validators=[validators.required()])
+    name_field = TextField('Name:', [
+        validators.DataRequired(message='Name is a required field'),
+        validators.Regexp('^(?!Calvin).*$',message='ERRRR Cannot be Calvin'),
+        validators.Regexp('^(?!Katherine).*$',message='ERRRR NO POTATO')])
 
 
 @app.route("/form", methods=['GET', 'POST'])
@@ -17,14 +20,15 @@ def form():
 
     print (form.errors)
     if request.method == 'POST':
-        name=request.form['name']
+        name=request.form['name_field']
         print (name)
 
         if form.validate():
-            # Save the comment here.
             flash('Hello ' + name)
         else:
-            flash('All the form fields are required. ')
+            for fieldName, errorMessages in form.errors.items():
+                for err in errorMessages: flash(err)
+
  
     return render_template('form.html', form=form)
 
