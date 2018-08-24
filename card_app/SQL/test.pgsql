@@ -1,0 +1,3 @@
+INSERT INTO basic_info VALUES (DEFAULT, 'TOMATO','BOB',DATE '2018-01-01');
+SELECT * FROM basic_info;
+
