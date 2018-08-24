@@ -1,8 +1,6 @@
 {% extends "layout.html" %}
 
 {% block content %}
-
-
  
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -14,12 +12,10 @@
     <form action="" method="post" novalidate="novalidate"> <!--prevents HTML5 popup-->
         {{ form.csrf }} 
         <div class="form-group">
-            {{ form.name_field.label }} {{ form.name_field }}
+            {{ form.name.label }} {{ form.name }}
         </div>
 
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
-
-
 
 {% endblock %}
