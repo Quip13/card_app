@@ -11,22 +11,7 @@
         <script src="node_modules/d3-dtree/dist/dTree.min.js"></script>
         <script>
             var currentYear = (new Date()).getFullYear();
-            var proband = {}
-            var generateTree = function(){
-                var familyData = [{
-                    name: proband.name,
-                    class: proband.sex,
-                    extra: {
-                        yob: proband.yob
-                    }
-                }]
-                return familyData
-            }
-            proband.name = prompt("What is your name?")
-            proband.sex = prompt("What is your sex assigned at birth (male/female)?")
-            proband.sex = ["male", "female"].indexOf(proband.sex) != -1 ? proband.sex : "other"
-            proband.yob = prompt("What year were you born?")
-            dTree.init(generateTree(), {
+            var treeOpts = {
                 target: "#treeMap",
                 callbacks: {
                     textRenderer: function(name, extra, textClass) {
@@ -37,11 +22,26 @@
                                 name = name + "<br><sub>(Age " + (currentYear - yob)  + ")</sub>";
                             }
                         }
-                        console.log(name)
                         return "<p align='center' class='" + textClass + "'>" + name + "</p>";
                     }
                 }
-            });
+            }
+            var proband = {}
+            var generateTree = function(){
+                var familyData = [{
+                    name: proband.name,
+                    class: "node " + proband.sex,
+                    extra: {
+                        yob: proband.yob
+                    }
+                }]
+                return familyData
+            }
+            proband.name = prompt("What is your name?")
+            proband.sex = prompt("What is your sex assigned at birth (male/female)?")
+            proband.sex = ["male", "female"].indexOf(proband.sex) != -1 ? proband.sex : "other"
+            proband.yob = prompt("What year were you born?")
+            dTree.init(generateTree(), treeOpts);
         </script>
     </body>
 </html>
