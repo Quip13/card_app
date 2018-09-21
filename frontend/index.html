@@ -1,0 +1,47 @@
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="res/main.css">
+    </head>
+    <body>
+        <div id="treeMap">
+
+        </div>
+        <script src="https://d3js.org/d3.v4.js"></script>
+        <script src="node_modules/lodash/lodash.js"></script>
+        <script src="node_modules/d3-dtree/dist/dTree.min.js"></script>
+        <script>
+            var currentYear = (new Date()).getFullYear();
+            var proband = {}
+            var generateTree = function(){
+                var familyData = [{
+                    name: proband.name,
+                    class: proband.sex,
+                    extra: {
+                        yob: proband.yob
+                    }
+                }]
+                return familyData
+            }
+            proband.name = prompt("What is your name?")
+            proband.sex = prompt("What is your sex assigned at birth (male/female)?")
+            proband.sex = ["male", "female"].indexOf(proband.sex) != -1 ? proband.sex : "other"
+            proband.yob = prompt("What year were you born?")
+            dTree.init(generateTree(), {
+                target: "#treeMap",
+                callbacks: {
+                    textRenderer: function(name, extra, textClass) {
+                        if (extra && extra.yob){
+                            var yob = parseInt(extra.yob)
+                            console.log(yob, currentYear)
+                            if(!isNaN(yob)){
+                                name = name + "<br><sub>(Age " + (currentYear - yob)  + ")</sub>";
+                            }
+                        }
+                        console.log(name)
+                        return "<p align='center' class='" + textClass + "'>" + name + "</p>";
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>
