@@ -1,47 +1,96 @@
 <html>
     <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">          
+        <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.min.css" rel="stylesheet">
         <link rel="stylesheet" type="text/css" href="res/main.css">
     </head>
     <body>
-        <div id="treeMap">
-
+        <div id="app">
+            {{proband}}
+            <v-app id="vuetify-app">
+                <div id="app-container">
+                    <div id="treeMap">
+                        
+                    </div>
+                    <div id="treeForm">
+                        <v-form id="proband-info" v-model="phaseValid[1]" v-if="phase==1">
+                            <v-text-field
+                                v-model="proband.name"
+                                label="What is your name?"
+                                :rules="[() => proband.name.length > 0 || 'Required field']"
+                                required
+                            ></v-text-field>
+                            <v-text-field
+                                v-model="proband.sex"
+                                label="What is your sex assigned at birth (male/female)?"
+                                required
+                            ></v-text-field>
+                            <v-text-field
+                                v-model="proband.yob"
+                                label="What year were you born?"
+                                :rules="[() => !isNaN(parseInt(proband.yob)) || 'Invalid year (yyyy)']"
+                                required
+                            ></v-text-field>
+                            <v-btn small color="primary" :disabled="!phaseValid[1]" @click="phase++;">Next</v-btn>
+                        </v-form>
+                        <v-form id="proban-children" v-if="phase==2">
+                            <v-text-field
+                                type="number"
+                                v-model="proband.nRepoductivePartners"
+                                label="With how many partners have you had children?"
+                                :rules="[() => !isNaN(parseInt(proband.nRepoductivePartners)) || 'Invalid number of reproductive partners.']"
+                                required
+                            ></v-text-field>
+                            {{proband.reproPartners}}
+                            <v-tabs
+                                color="cyan"
+                                dark
+                                slider-color="yellow"
+                            >
+                                <v-tab
+                                    v-for="partnerIndex in parseInt(proband.nRepoductivePartners)"
+                                    :key="partnerIndex"
+                                    ripple
+                                >
+                                    Partner {{partnerIndex}}
+                                </v-tab>
+                                <v-tab-item
+                                    v-for="partnerIndex in parseInt(proband.nRepoductivePartners)"
+                                    :key="partnerIndex"
+                                >
+                                    <v-card flat
+                                        v-if="proband.reproPartners[partnerIndex-1]"
+                                    >
+                                        <v-text-field
+                                            v-model="proband.reproPartners[partnerIndex-1].name"
+                                            label="What is the partner's name?"
+                                            @keydown="renderTree"
+                                            :rules="[() => proband.reproPartners[partnerIndex-1].name.length > 0 || 'Required field']"
+                                            required
+                                        ></v-text-field>
+                                        <v-text-field
+                                            type="number"
+                                            v-model="proband.reproPartners[partnerIndex-1].nChildren"
+                                            label="With how many children do you have with this partner?"
+                                            @keydown="renderTree"
+                                            :rules="[() => !isNaN(parseInt(proband.reproPartners[partnerIndex-1]).nChildren) || 'Invalid number of children.']"
+                                            required
+                                        ></v-text-field>
+                                    </v-card>
+                                </v-tab-item>
+                            </v-tabs>
+                        </v-form>
+                    </div>
+                </div>
+            </v-app>
         </div>
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script>
         <script src="https://d3js.org/d3.v4.js"></script>
         <script src="node_modules/lodash/lodash.js"></script>
         <script src="node_modules/d3-dtree/dist/dTree.min.js"></script>
-        <script>
-            var currentYear = (new Date()).getFullYear();
-            var treeOpts = {
-                target: "#treeMap",
-                callbacks: {
-                    textRenderer: function(name, extra, textClass) {
-                        if (extra && extra.yob){
-                            var yob = parseInt(extra.yob)
-                            console.log(yob, currentYear)
-                            if(!isNaN(yob)){
-                                name = name + "<br><sub>(Age " + (currentYear - yob)  + ")</sub>";
-                            }
-                        }
-                        return "<p align='center' class='" + textClass + "'>" + name + "</p>";
-                    }
-                }
-            }
-            var proband = {}
-            var generateTree = function(){
-                var familyData = [{
-                    name: proband.name,
-                    class: "node " + proband.sex,
-                    extra: {
-                        yob: proband.yob
-                    }
-                }]
-                return familyData
-            }
-            proband.name = prompt("What is your name?")
-            proband.sex = prompt("What is your sex assigned at birth (male/female)?")
-            proband.sex = ["male", "female"].indexOf(proband.sex) != -1 ? proband.sex : "other"
-            proband.yob = prompt("What year were you born?")
-            dTree.init(generateTree(), treeOpts);
-        </script>
+        <script src="node_modules/bson-objectid/objectid.js"></script>
+        <script src="res/main.js"></script>
     </body>
 </html>
