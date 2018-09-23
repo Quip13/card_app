@@ -1,17 +1,21 @@
 var currentYear = (new Date()).getFullYear()
+var initialPedigreeNode = {
+    name: "",
+    sex: "",
+    yob: currentYear,
+    mother: "",
+    father: ""
+}
 var app = new Vue({
     el: '#app',
     data: function(){
         return {
             phase: 1,
             phaseValid: {},
-            proband: {
-                name: "J",
-                sex: "Male",
-                yob: "1995",
-                nRepoductivePartners: 0,
-                reproPartners: [],
-            },
+            probandID: ObjectID().str,
+            nProbandParnters: 0,
+            probandPartners: [],
+            pedigreeNodes: {},
             treeOpts: {
                 target: "#treeMap",
                 callbacks: {
@@ -29,13 +33,30 @@ var app = new Vue({
         }
     },
     watch: {
-        proband: {
+        pedigreeNodes: {
             handler: function(){
-                alert("y")
                 this.renderTree()
             },
             deep: true,
         },
+        nProbandParnters: function() {
+            if(this.nProbandParnters > 0){
+                Array(parseInt(this.nProbandParnters)).fill().forEach((_, partnerIndex) => {
+                    if(!this.probandPartners[partnerIndex]){
+                        this.probandPartners[partnerIndex] = ObjectID().str
+                        this.$set(this.pedigreeNodes, this.probandPartners[partnerIndex], Object.assign({}, initialPedigreeNode))
+                    }
+                })
+                if(parseInt(this.nProbandParnters) < this.probandPartners.length) {
+                    this.probandPartners.slice(parseInt(this.nProbandParnters)).forEach((partnerID) => {
+                        this.$delete(this.pedigreeNodes, partnerID)
+                    })
+                    this.probandPartners = this.probandPartners.slice(0, parseInt(this.nProbandParnters))
+                }
+                console.log(this.probandPartners)
+                console.log(this.pedigreeNodes)
+            }
+        }
     },
     methods: {
         renderTree: function() { 
@@ -44,24 +65,27 @@ var app = new Vue({
         },
         generateTree: function () {
             var probandNode = {
-                name: this.proband.name,
-                class: "node" + (["male", "female"].indexOf(this.proband.sex.toLowerCase()) != -1 ? (" " + this.proband.sex) : ""),
+                name: this.pedigreeNodes[this.probandID].name,
+                class: "node" + (["male", "female"].indexOf(this.pedigreeNodes[this.probandID].sex.toLowerCase()) != -1 ? (" " + this.pedigreeNodes[this.probandID].sex) : ""),
                 extra: {
-                    yob: this.proband.yob
+                    yob: this.pedigreeNodes[this.probandID].yob
                 },
                 marriages: []
             }
-            if(this.proband.nRepoductivePartners > 0){
-                console.log(this.proband)
-                Array(parseInt(this.proband.nRepoductivePartners)).fill().forEach((_, partnerIndex) => {
-                    if(!this.proband.reproPartners[partnerIndex]){
-                        this.proband.reproPartners[partnerIndex] = {}
+            this.probandPartners.forEach((partnerID) => {
+                partnerData = this.pedigreeNodes[partnerID]
+                probandNode.marriages.push({
+                    spouse: {
+                        name: partnerData.name,
                     }
                 })
-            }
+            })
             var familyData = [probandNode]
             return familyData
         }
+    },
+    mounted: function(){
+        this.$set(this.pedigreeNodes, this.probandID, Object.assign({}, initialPedigreeNode))
     }
 })
 /*proband.name = prompt("What is your name?")
