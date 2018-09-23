@@ -3,8 +3,7 @@ var initialPedigreeNode = {
     name: "J",
     sex: "",
     yob: currentYear,
-    mother: "",
-    father: "",
+    parents: [],
     nPartners: undefined,
     partners: [],
     nChildren: undefined,
@@ -27,7 +26,7 @@ var app = new Vue({
                         if (extra && extra.yob) {
                             var yob = parseInt(extra.yob)
                             if (!isNaN(yob)) {
-                                name = name + "<br><sub>(Age " + (currentYear - yob) + ")</sub>";
+                                name = name + "<br><span class='age'>(Age " + (currentYear - yob) + ")</span>";
                             }
                         }
                         return "<p align='center' class='" + textClass + "'>" + name + "</p>";
@@ -53,7 +52,12 @@ var app = new Vue({
                         if(!nodeData.partners[partnerIndex]){
                             nodeData.partners[partnerIndex] = ObjectID().str
                             this.$set(this.pedigreeNodes, nodeID, nodeData)
-                            this.$set(this.pedigreeNodes, nodeData.partners[partnerIndex], JSON.parse(JSON.stringify(initialPedigreeNode)))
+                            var partnerData = JSON.parse(JSON.stringify(initialPedigreeNode))
+                            if(nodeData.sex == "Male") partnerData.sex = "Female"
+                            if(nodeData.sex == "Female") partnerData.sex = "Male"
+                            //Non-related individuals will only get a single partner relating them back to the blood relative
+                            partnerData.partners = [nodeID]
+                            this.$set(this.pedigreeNodes, nodeData.partners[partnerIndex], partnerData)
                         }
                     })
                     if(parseInt(nodeData.nPartners) < nodeData.partners.length) {
@@ -69,7 +73,11 @@ var app = new Vue({
                         if(!nodeData.children[childIndex]){
                             nodeData.children[childIndex] = ObjectID().str
                             this.$set(this.pedigreeNodes, nodeID, nodeData)
-                            this.$set(this.pedigreeNodes, nodeData.children[childIndex], JSON.parse(JSON.stringify(initialPedigreeNode)))
+                            var childData = JSON.parse(JSON.stringify(initialPedigreeNode))
+                            //Children will get their parents from the current non-blood node, and that node's only partner node.
+                            //Note: this only works barring incest, and remarriage within the family.
+                            childData.parents = [nodeID, nodeData.partners[0]]
+                            this.$set(this.pedigreeNodes, nodeData.children[childIndex], childData)
                         }
                     })
                     if(parseInt(nodeData.nChildren) < nodeData.children.length) {
@@ -89,7 +97,7 @@ var app = new Vue({
         generateTree: function () {
             var probandNode = {
                 name: this.pedigreeNodes[this.probandID].name,
-                class: "node" + (["male", "female"].indexOf(this.pedigreeNodes[this.probandID].sex.toLowerCase()) != -1 ? (" " + this.pedigreeNodes[this.probandID].sex) : ""),
+                class: "node " + this.pedigreeNodes[this.probandID].sex.toLowerCase(),
                 extra: {
                     yob: this.pedigreeNodes[this.probandID].yob
                 },
@@ -99,14 +107,21 @@ var app = new Vue({
                 partnerData = this.pedigreeNodes[partnerID]
                 var children = partnerData.children.map((childID) => {
                     var childData = this.pedigreeNodes[childID]
-                    console.log(childData)
                     return {
-                        name: childData.name
+                        name: childData.name,
+                        class: "node " + this.pedigreeNodes[childID].sex.toLowerCase(),
+                        extra: {
+                            yob: this.pedigreeNodes[childID].yob
+                        },        
                     }
                 })
                 probandNode.marriages.push({
                     spouse: {
                         name: partnerData.name,
+                        class: "node " + this.pedigreeNodes[partnerID].sex.toLowerCase(),
+                        extra: {
+                            yob: this.pedigreeNodes[partnerID].yob
+                        },       
                     },
                     children: children
                 })
