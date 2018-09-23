@@ -6,7 +6,9 @@ var initialPedigreeNode = {
     mother: "",
     father: "",
     nPartners: undefined,
-    partners: []
+    partners: [],
+    nChildren: undefined,
+    children: [],
 }
 var app = new Vue({
     el: '#app',
@@ -45,22 +47,36 @@ var app = new Vue({
     },
     methods: {
         updatePedigree: function(){
-            console.log(this.pedigreeNodes)
             Object.entries(this.pedigreeNodes).forEach(([nodeID, nodeData]) => {
                 if(parseInt(nodeData.nPartners) > 0){
                     Array(parseInt(nodeData.nPartners)).fill().forEach((_, partnerIndex) => {
                         if(!nodeData.partners[partnerIndex]){
                             nodeData.partners[partnerIndex] = ObjectID().str
                             this.$set(this.pedigreeNodes, nodeID, nodeData)
-                            console.log(initialPedigreeNode)
                             this.$set(this.pedigreeNodes, nodeData.partners[partnerIndex], JSON.parse(JSON.stringify(initialPedigreeNode)))
                         }
                     })
                     if(parseInt(nodeData.nPartners) < nodeData.partners.length) {
-                        this.probandPartners.slice(parseInt(nodeData.nPartners)).forEach((partnerID) => {
+                        nodeData.partners.slice(parseInt(nodeData.nPartners)).forEach((partnerID) => {
                             this.$delete(this.pedigreeNodes, partnerID)
                         })
                         nodeData.partners = nodeData.partners.slice(0, parseInt(nodeData.nPartners))
+                        this.$set(this.pedigreeNodes, nodeID, nodeData)
+                    }
+                }
+                if(parseInt(nodeData.nChildren) > 0){
+                    Array(parseInt(nodeData.nChildren)).fill().forEach((_, childIndex) => {
+                        if(!nodeData.children[childIndex]){
+                            nodeData.children[childIndex] = ObjectID().str
+                            this.$set(this.pedigreeNodes, nodeID, nodeData)
+                            this.$set(this.pedigreeNodes, nodeData.children[childIndex], JSON.parse(JSON.stringify(initialPedigreeNode)))
+                        }
+                    })
+                    if(parseInt(nodeData.nChildren) < nodeData.children.length) {
+                        nodeData.children.slice(parseInt(nodeData.nChildren)).forEach((childID) => {
+                            this.$delete(this.pedigreeNodes, childID)
+                        })
+                        nodeData.children = nodeData.children.slice(0, parseInt(nodeData.nChildren))
                         this.$set(this.pedigreeNodes, nodeID, nodeData)
                     }
                 }
@@ -71,9 +87,6 @@ var app = new Vue({
             dTree.init(this.generateTree(), this.treeOpts);
         },
         generateTree: function () {
-            var momNode = {
-
-            }
             var probandNode = {
                 name: this.pedigreeNodes[this.probandID].name,
                 class: "node" + (["male", "female"].indexOf(this.pedigreeNodes[this.probandID].sex.toLowerCase()) != -1 ? (" " + this.pedigreeNodes[this.probandID].sex) : ""),
@@ -84,10 +97,18 @@ var app = new Vue({
             }
             this.pedigreeNodes[this.probandID].partners.forEach((partnerID) => {
                 partnerData = this.pedigreeNodes[partnerID]
+                var children = partnerData.children.map((childID) => {
+                    var childData = this.pedigreeNodes[childID]
+                    console.log(childData)
+                    return {
+                        name: childData.name
+                    }
+                })
                 probandNode.marriages.push({
                     spouse: {
                         name: partnerData.name,
-                    }
+                    },
+                    children: children
                 })
             })
             var familyData = [probandNode]
