@@ -43,7 +43,7 @@
                         <v-form id="proband-children" v-if="phase==2">
                             <v-text-field
                                 type="number"
-                                v-model="nProbandParnters"
+                                v-model="pedigreeNodes[probandID].nPartners"
                                 label="With how many partners have you had children?"
                                 :rules="[() => !isNaN(parseInt(nProbandParnters)) || 'Invalid number of reproductive partners.']"
                                 required
@@ -54,14 +54,14 @@
                                 slider-color="yellow"
                             >
                                 <v-tab
-                                v-for="(partnerID, partnerIndex) in probandPartners"
+                                v-for="(partnerID, partnerIndex) in pedigreeNodes[probandID].partners"
                                 :key="partnerID"
                                     ripple
                                 >
                                     Partner {{partnerIndex}}
                                 </v-tab>
                                 <v-tab-item
-                                    v-for="(partnerID, partnerIndex) in probandPartners"
+                                    v-for="(partnerID, partnerIndex) in pedigreeNodes[probandID].partners"
                                     :key="partnerID"
                                 >
                                     <v-card flat>

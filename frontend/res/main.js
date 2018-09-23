@@ -1,10 +1,12 @@
 var currentYear = (new Date()).getFullYear()
 var initialPedigreeNode = {
-    name: "",
+    name: "J",
     sex: "",
     yob: currentYear,
     mother: "",
-    father: ""
+    father: "",
+    nPartners: undefined,
+    partners: []
 }
 var app = new Vue({
     el: '#app',
@@ -35,35 +37,43 @@ var app = new Vue({
     watch: {
         pedigreeNodes: {
             handler: function(){
+                this.updatePedigree()
                 this.renderTree()
             },
             deep: true,
         },
-        nProbandParnters: function() {
-            if(this.nProbandParnters > 0){
-                Array(parseInt(this.nProbandParnters)).fill().forEach((_, partnerIndex) => {
-                    if(!this.probandPartners[partnerIndex]){
-                        this.probandPartners[partnerIndex] = ObjectID().str
-                        this.$set(this.pedigreeNodes, this.probandPartners[partnerIndex], Object.assign({}, initialPedigreeNode))
-                    }
-                })
-                if(parseInt(this.nProbandParnters) < this.probandPartners.length) {
-                    this.probandPartners.slice(parseInt(this.nProbandParnters)).forEach((partnerID) => {
-                        this.$delete(this.pedigreeNodes, partnerID)
-                    })
-                    this.probandPartners = this.probandPartners.slice(0, parseInt(this.nProbandParnters))
-                }
-                console.log(this.probandPartners)
-                console.log(this.pedigreeNodes)
-            }
-        }
     },
     methods: {
+        updatePedigree: function(){
+            console.log(this.pedigreeNodes)
+            Object.entries(this.pedigreeNodes).forEach(([nodeID, nodeData]) => {
+                if(parseInt(nodeData.nPartners) > 0){
+                    Array(parseInt(nodeData.nPartners)).fill().forEach((_, partnerIndex) => {
+                        if(!nodeData.partners[partnerIndex]){
+                            nodeData.partners[partnerIndex] = ObjectID().str
+                            this.$set(this.pedigreeNodes, nodeID, nodeData)
+                            console.log(initialPedigreeNode)
+                            this.$set(this.pedigreeNodes, nodeData.partners[partnerIndex], JSON.parse(JSON.stringify(initialPedigreeNode)))
+                        }
+                    })
+                    if(parseInt(nodeData.nPartners) < nodeData.partners.length) {
+                        this.probandPartners.slice(parseInt(nodeData.nPartners)).forEach((partnerID) => {
+                            this.$delete(this.pedigreeNodes, partnerID)
+                        })
+                        nodeData.partners = nodeData.partners.slice(0, parseInt(nodeData.nPartners))
+                        this.$set(this.pedigreeNodes, nodeID, nodeData)
+                    }
+                }
+            })
+        },
         renderTree: function() { 
             document.querySelector(this.treeOpts.target).innerHTML = ""
             dTree.init(this.generateTree(), this.treeOpts);
         },
         generateTree: function () {
+            var momNode = {
+
+            }
             var probandNode = {
                 name: this.pedigreeNodes[this.probandID].name,
                 class: "node" + (["male", "female"].indexOf(this.pedigreeNodes[this.probandID].sex.toLowerCase()) != -1 ? (" " + this.pedigreeNodes[this.probandID].sex) : ""),
@@ -72,7 +82,7 @@ var app = new Vue({
                 },
                 marriages: []
             }
-            this.probandPartners.forEach((partnerID) => {
+            this.pedigreeNodes[this.probandID].partners.forEach((partnerID) => {
                 partnerData = this.pedigreeNodes[partnerID]
                 probandNode.marriages.push({
                     spouse: {
@@ -85,7 +95,7 @@ var app = new Vue({
         }
     },
     mounted: function(){
-        this.$set(this.pedigreeNodes, this.probandID, Object.assign({}, initialPedigreeNode))
+        this.$set(this.pedigreeNodes, this.probandID, JSON.parse(JSON.stringify(initialPedigreeNode)))
     }
 })
 /*proband.name = prompt("What is your name?")
